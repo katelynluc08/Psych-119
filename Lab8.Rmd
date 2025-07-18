@@ -1,0 +1,79 @@
+---
+Name: "Katelyn Luc" 
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+
+library("tidyverse")
+
+setwd('C:/Users/kate/Downloads/119_Lab')
+
+
+analyze_participant <- function(filename) {
+  
+  df <- read.csv(filename, skip = 3) %>% filter(response == 1 & correct == 1)
+  
+  df_p <- df %>% group_by(condition1) %>% summarise(mean_RT = mean(RT)) %>% mutate(participant_id = gsub(".csv", "", filename))
+  
+
+
+return(df_p)
+  
+}
+	
+
+	df_p1 <- analyze_participant('participant_1.csv')
+	df_p2 <- analyze_participant('participant_2.csv')
+	df_p3 <- analyze_participant('participant_3.csv')
+	df_p4 <- analyze_participant('participant_4.csv')
+	df_p5 <- analyze_participant('participant_5.csv')
+	df_p6 <- analyze_participant('participant_6.csv')
+	df_p7 <- analyze_participant('participant_7.csv')
+	df_p8 <- analyze_participant('participant_8.csv')
+	df_p9 <- analyze_participant('participant_9.csv')
+	df_p10 <- analyze_participant('participant_10.csv')
+	
+all_data_wide <- rbind(df_p1, df_p2, df_p3, df_p4, df_p5, df_p6, df_p7, df_p8, df_p9, df_p10) %>% pivot_wider(names_from = condition1, values_from = mean_RT) %>% mutate(condition_contrast = `Target A` - `Target B`) %>% filter(!is.na(condition_contrast))
+
+
+data_results <- t.test(all_data_wide$condition_contrast, mu = 0)
+
+data_results
+
+plot_df <- all_data_wide %>% 
+  pivot_longer(cols = c('Prime A', 'Prime B', 'Target A', 'Target B'), 
+               names_to = "condition", 
+               values_to = "mean_RT") %>% 
+  group_by(condition) %>%
+  summarise(
+    mean = mean(mean_RT, na.rm = TRUE),
+    sd_RT = sd(mean_RT, na.rm = TRUE),
+    sem_RT = sd_RT / sqrt(n()))
+
+plot_df
+
+library(ggplot2)
+
+ggplot(plot_df %>% filter(condition %in% c("Target A", "Target B")), 
+       aes(x = condition, y = mean, fill = condition)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  geom_errorbar(aes(ymin = mean - sem_RT, ymax = mean + sem_RT), 
+                width = 0.2, color = "black") +
+  labs(title = "Reaction Times for Salty vs. Sweet",
+       x = "Condition",
+       y = "Mean Reaction Time (ms)") +
+  theme_minimal()
+
+
+
+
+
+
+```
+

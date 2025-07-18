@@ -1,0 +1,42 @@
+---
+title: "urop_demographics"
+output: html_document
+date: "2025-04-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+setwd('C:/Users/kate/Downloads')
+
+demographics_data <- read.csv('Mastersheet_EyeTracking.csv')
+  
+participant_ids <- c("130667", "130670", "130666", "130677", "130683", "130694", "130700", "130703", "130705", "130719", "130576", "130657", "130681", "130659", "130660", "130662", "130792", "130702", "130826", "130718", "130801", "130580", "130658", "130669", "130854", "130704", "130699", "130850", "130814", "130685", "130656", "130655", "130821", "130866", "130811", "130712", "130794", "130819", "130816", "130791", "130825", "130817", "130661")
+
+selected_data <- demographics_data[demographics_data[["Participant.ID"]] %in% participant_ids, ]
+
+demographics_summary <- selected_data[, c("Participant.ID", "Age", "Gender", "Education", "Race", "MOCA")]
+
+print(demographics_summary)
+write.csv(demographics_summary, "filtered_demographics.csv", row.names = FALSE)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

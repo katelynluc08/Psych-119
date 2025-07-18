@@ -1,0 +1,75 @@
+---
+Name: "Katelyn Luc" 
+title: "Lab 6"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+```{r}
+
+library(tidyverse)
+
+```
+
+```{r}
+
+
+
+#1. Read in your csv data file using read.csv
+setwd('C:/Users/kate/Downloads')
+dual_table <- read.csv('lab6data.csv')
+
+#2. Make sure it is formatted correctly, and convert to long format using pivot_longer. Then use Use group_by() and summarize() to aggregate all the trials/blocks that belong to a participant, and yeild have one value per participant and IV.
+
+dual_table.long <- dual_table |>
+  pivot_longer(
+    cols = starts_with("Condition"),
+    names_to = "Condition type",
+    values_to = "Scores"
+  )
+
+dual_table.long
+
+# No multiple trials so I do not have to use group_by or summarize. 
+
+
+
+```
+
+```{r}
+
+#3. Create a new column in your data frame in which you compute within-participant contrast (subtraction) between your two conditions of interest. Call this column condition_contrast. Then, report and means and SDs of each of your IVs, reflecting between-participant variance.
+
+dual_table.new <- dual_table.long |>
+  pivot_wider(
+    id_cols = Subject, 
+    names_from = `Condition type`,
+    values_from = Scores
+  ) |>
+  mutate(condition_contrast = Condition1 - Condition2)
+
+dual_table.new
+
+dual_table.summary <- dual_table.new |>
+  summarize(mean_condition1 = mean(Condition1, na.rm = TRUE), mean_condition2 = mean(Condition2, na.rm = TRUE), sd_1 = sd(Condition1, na.rm = TRUE), sd_2 = sd(Condition2, na.rm = TRUE)
+            )
+
+dual_table.summary 
+
+
+```
+
+
+```{r}
+
+#4. Use t-test() to compare condition_contrast to your null hypothesis with the t distribution. 
+
+# Comparing average condition contrast to see if it is equal to 0 or not because then you can conclude that there may or may not be a significant difference and you do this by using t-test()"
+
+data_results <- t.test(dual_table.new$condition_contrast, mu = 0)
+
+data_results
+
+```

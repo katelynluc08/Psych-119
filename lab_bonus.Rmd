@@ -1,0 +1,85 @@
+---
+title: "Lab Bonus" 
+output: html_document
+date: "2025-03-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+library("tidyverse")
+
+setwd('C:/Users/kate/Downloads/119_Lab')
+
+
+analyze_participant <- function(filename) {
+  
+  df <- read.csv(filename, skip = 3)
+  
+  df_p <- df %>% group_by(condition1) %>% summarise(mean_correct = mean(correct)) %>% mutate(participant_id = gsub(".csv", "", filename))
+  
+
+
+return(df_p)
+  
+}
+	
+
+	df_p1 <- analyze_participant('p1.csv')
+	df_p2 <- analyze_participant('p2.csv')
+	df_p3 <- analyze_participant('p3.csv')
+	df_p4 <- analyze_participant('p4.csv')
+	df_p5 <- analyze_participant('p5.csv')
+
+	
+all_data_wide <- rbind(df_p1, df_p2, df_p3, df_p4, df_p5) %>% mutate (condition1 = recode(condition1, "2" = "Exact Match", "3" = "Generalization Match")) %>% pivot_wider(names_from = condition1, values_from = mean_correct) %>% mutate(condition_contrast = `Exact Match` - `Generalization Match`)
+
+all_data_wide
+
+data_results <- t.test(all_data_wide$condition_contrast, mu = 0)
+
+data_results
+
+plot_df <- all_data_wide %>% 
+  pivot_longer(cols = c('Exact Match', 'Generalization Match'), 
+               names_to = "condition", 
+               values_to = "accuracy") %>% 
+  group_by(condition) %>%
+  summarise(
+    mean = mean(accuracy, na.rm = TRUE),
+    sd = sd(accuracy, na.rm = TRUE),
+    sem_RT = sd / sqrt(n()))
+
+plot_df
+
+library(ggplot2)
+
+ggplot(plot_df %>% filter(condition %in% c("Exact Match", "Generalization Match")), 
+       aes(x = condition, y = mean, fill = condition)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  geom_errorbar(aes(ymin = mean - sem_RT, ymax = mean + sem_RT), 
+                width = 0.2, color = "black") +
+  labs(title = "Accuracy for exact match vs. generalization",
+       x = "Type of test",
+       y = "Mean accuracy") +
+  theme_minimal()
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
